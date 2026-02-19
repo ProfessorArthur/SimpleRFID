@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RFID Tag Reader</title>
+    <link rel="icon" type="image/svg+xml" href="rfid-svgrepo-com.svg">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <h1>RFID Tag Reader</h1>
+    <p class="subtitle">Connect your Arduino RFID reader via USB</p>
+
+    <button id="connectBtn">Connect to Reader</button>
+
+    <div id="status" class="waiting">
+        <span class="pulse yellow"></span> Not connected
+    </div>
+
+    <div class="tag-list">
+        <h2>
+            Scanned Tags <span id="tagCount"></span>
+            <button id="clearBtn" style="display:none;">Clear</button>
+        </h2>
+        <div id="tagContainer">
+            <div class="empty-state">
+                <div class="icon">📡</div>
+                Connect your reader and scan an RFID tag to begin.
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+
+</body>
+
+</html>
