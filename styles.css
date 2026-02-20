@@ -80,6 +80,101 @@ h1 {
   border-left: 3px solid #ff4466;
 }
 
+/* ─── Scan Bar ─── */
+.scan-bar {
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 2rem;
+}
+
+.scan-bar label {
+  display: block;
+  font-size: 0.85rem;
+  color: #888;
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.5px;
+}
+
+.scan-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.scan-icon {
+  position: absolute;
+  left: 14px;
+  font-size: 1.2rem;
+  color: #555;
+  pointer-events: none;
+  animation: cursorBlink 1s step-end infinite;
+}
+
+#scanInput {
+  width: 100%;
+  padding: 0.85rem 1rem 0.85rem 2.2rem;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 1.4rem;
+  letter-spacing: 3px;
+  color: #fff;
+  background: #12121f;
+  border: 2px solid #2a2a4a;
+  border-radius: 10px;
+  outline: none;
+  transition:
+    border-color 0.3s,
+    box-shadow 0.3s;
+}
+
+#scanInput::placeholder {
+  color: #444;
+  font-size: 0.95rem;
+  letter-spacing: 0;
+}
+
+#scanInput.scanning {
+  border-color: #00d4ff;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+}
+
+.scan-confirmation {
+  position: absolute;
+  right: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #00ff88;
+  background: #0f0f1a;
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.scan-confirmation.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.scan-confirmation.hidden {
+  opacity: 0;
+}
+
+@keyframes cursorBlink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* ─── Tag List ─── */
 .tag-list {
   width: 100%;
   max-width: 600px;

@@ -3,10 +3,38 @@ const statusEl = document.getElementById("status");
 const tagContainer = document.getElementById("tagContainer");
 const tagCountEl = document.getElementById("tagCount");
 const clearBtn = document.getElementById("clearBtn");
+const scanInput = document.getElementById("scanInput");
+const scanConfirmation = document.getElementById("scanConfirmation");
 
 let port = null;
 let reader = null;
 let tags = []; // { uid, count, lastSeen }
+let scanAnimTimer = null;
+
+// ---- Configurable timings (edit these to change behavior) ----
+const BEEP_FREQUENCY = 1500; // Hz
+const BEEP_DURATION_MS = 120; // ms
+const TYPE_DELAY_MS = 10; // ms per character when typing UID
+const POST_TYPE_PAUSE_MS = 600; // ms to wait after typing before confirmation
+const CONFIRM_DISPLAY_MS = 500; // ms to display the "scanned" confirmation
+// ---------------------------------------------------------------
+// Create beep sound using Web Audio API
+function playBeep(frequency = 1500, duration = 150) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "square";
+    osc.frequency.value = frequency;
+    gain.gain.value = 0.15;
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + duration / 1000);
+  } catch (e) {
+    /* audio not available */
+  }
+}
 
 connectBtn.addEventListener("click", async () => {
   if (port) {
@@ -94,6 +122,64 @@ function parseLine(line) {
   const uid = match[1].trim().toUpperCase();
   const now = new Date();
 
+  // Barcode-like scan animation
+  animateScanInput(uid, now);
+}
+
+function animateScanInput(uid, now) {
+  // Cancel any in-progress animation
+  if (scanAnimTimer) {
+    clearTimeout(scanAnimTimer);
+    scanAnimTimer = null;
+  }
+
+  scanInput.value = "";
+  scanInput.classList.add("scanning");
+  scanConfirmation.classList.add("hidden");
+  scanConfirmation.classList.remove("show");
+
+  // Typewriter effect: type UID character by character
+  const chars = uid.split("");
+  let i = 0;
+
+  function typeNext() {
+    if (i < chars.length) {
+      scanInput.value += chars[i];
+      i++;
+      scanAnimTimer = setTimeout(typeNext, TYPE_DELAY_MS);
+    } else {
+      // Typing complete — beep
+      playBeep(BEEP_FREQUENCY, BEEP_DURATION_MS);
+
+      // Brief pause to show the full UID
+      scanAnimTimer = setTimeout(() => {
+        // Show confirmation
+        scanConfirmation.textContent = "✓ Scanned successfully";
+        scanConfirmation.classList.remove("hidden");
+        scanConfirmation.classList.add("show");
+
+        // Clear the input text
+        scanInput.value = "";
+        scanInput.classList.remove("scanning");
+
+        // Record the tag
+        recordTag(uid, now);
+
+        // Hide confirmation after a moment
+        scanAnimTimer = setTimeout(() => {
+          scanConfirmation.classList.remove("show");
+          scanConfirmation.classList.add("hidden");
+          scanInput.placeholder = "Waiting for scan…";
+        }, CONFIRM_DISPLAY_MS);
+      }, 600);
+    }
+  }
+
+  scanInput.placeholder = "";
+  typeNext();
+}
+
+function recordTag(uid, now) {
   // Check if tag already seen
   const existing = tags.find((t) => t.uid === uid);
   if (existing) {

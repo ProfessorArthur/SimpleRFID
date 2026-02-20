@@ -20,6 +20,15 @@
         <span class="pulse yellow"></span> Not connected
     </div>
 
+    <div class="scan-bar">
+        <label for="scanInput">Scan Input</label>
+        <div class="scan-input-wrapper">
+            <span class="scan-icon">⏐</span>
+            <input type="text" id="scanInput" placeholder="Waiting for scan…" readonly />
+            <div id="scanConfirmation" class="scan-confirmation hidden"></div>
+        </div>
+    </div>
+
     <div class="tag-list">
         <h2>
             Scanned Tags <span id="tagCount"></span>
