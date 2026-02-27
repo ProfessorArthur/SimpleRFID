@@ -10,34 +10,106 @@ body {
   color: #e0e0e0;
   min-height: 100vh;
   display: flex;
+  justify-content: center;
+  padding: 0.6rem;
+  overflow: hidden;
+}
+
+.dashboard {
+  width: min(1800px, 100%);
+  height: calc(100vh - 1.2rem);
+  background: #111122;
+  border: 1px solid #2a2a4a;
+  border-radius: 14px;
+  padding: 1rem;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 0.75rem;
+  overflow: hidden;
+}
+
+.hero {
+  display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 2rem;
+  gap: 0.2rem;
 }
 
 h1 {
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
+  font-size: 1.55rem;
   color: #00d4ff;
   text-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
 }
 
 .subtitle {
   color: #888;
-  margin-bottom: 2rem;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
+}
+
+.control-bar {
+  margin-bottom: 0;
+  gap: 0.5rem;
+}
+
+.control-top {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.dashboard-grid {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  align-items: start;
+  align-content: start;
+  overflow: auto;
+  padding-right: 0.25rem;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.panel-flow,
+.panel-features,
+.panel-tags {
+  grid-column: span 1;
+}
+
+.panel-form {
+  grid-column: span 2;
+}
+
+@media (max-width: 1300px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .panel-form,
+  .panel-api,
+  .full-width {
+    grid-column: 1 / -1;
+  }
+
+  .panel-flow,
+  .panel-features,
+  .panel-tags {
+    grid-column: span 1;
+  }
 }
 
 #connectBtn {
-  padding: 0.75rem 2rem;
-  font-size: 1rem;
+  padding: 0.55rem 1.2rem;
+  font-size: 0.92rem;
   border: 2px solid #00d4ff;
   background: transparent;
   color: #00d4ff;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-bottom: 2rem;
+  margin-bottom: 0;
 }
 
 #connectBtn:hover {
@@ -58,9 +130,9 @@ h1 {
 }
 
 #status {
-  font-size: 0.9rem;
-  margin-bottom: 1.5rem;
-  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  margin-bottom: 0;
+  padding: 0.45rem 0.8rem;
   border-radius: 6px;
   background: #1a1a2e;
 }
@@ -83,8 +155,12 @@ h1 {
 /* ─── Scan Bar ─── */
 .scan-bar {
   width: 100%;
-  max-width: 600px;
-  margin-bottom: 2rem;
+  max-width: 100%;
+  margin-bottom: 0;
+}
+
+.scan-bar.compact {
+  margin-top: 0.1rem;
 }
 
 .scan-bar label {
@@ -112,10 +188,10 @@ h1 {
 
 #scanInput {
   width: 100%;
-  padding: 0.85rem 1rem 0.85rem 2.2rem;
+  padding: 0.65rem 0.85rem 0.65rem 2rem;
   font-family: "Consolas", "Courier New", monospace;
-  font-size: 1.4rem;
-  letter-spacing: 3px;
+  font-size: 1.1rem;
+  letter-spacing: 2px;
   color: #fff;
   background: #12121f;
   border: 2px solid #2a2a4a;
@@ -174,16 +250,81 @@ h1 {
   }
 }
 
+.form-panel {
+  width: 100%;
+  max-width: 100%;
+  background: #1a1a2e;
+  border: 1px solid #2a2a4a;
+  border-radius: 10px;
+  padding: 0.75rem;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  height: fit-content;
+}
+
+.form-panel h2 {
+  font-size: 0.95rem;
+  color: #aaa;
+}
+
+.form-panel p {
+  color: #777;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  margin-bottom: 0;
+}
+
+.form-panel ol {
+  margin: 0.2rem 0 0 1rem;
+  color: #8a8a9a;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  display: grid;
+  gap: 0.18rem;
+}
+
+.form-panel li {
+  overflow-wrap: anywhere;
+}
+
+.form-panel label {
+  font-size: 0.8rem;
+  color: #999;
+}
+
+.form-panel input,
+.form-panel textarea {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #33385c;
+  border-radius: 8px;
+  background: #12121f;
+  color: #e0e0e0;
+  outline: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.form-panel input:focus,
+.form-panel textarea:focus {
+  border-color: #00d4ff;
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+}
+
 /* ─── Tag List ─── */
 .tag-list {
   width: 100%;
-  max-width: 600px;
+  max-width: 100%;
 }
 
 .tag-list h2 {
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   color: #aaa;
-  margin-bottom: 1rem;
+  margin-bottom: 0.55rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -213,14 +354,16 @@ h1 {
 #tagContainer {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.45rem;
+  overflow: auto;
+  max-height: 240px;
 }
 
 .tag-card {
   background: #1a1a2e;
   border: 1px solid #2a2a4a;
   border-radius: 10px;
-  padding: 1rem 1.25rem;
+  padding: 0.72rem 0.9rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -234,9 +377,9 @@ h1 {
 
 .tag-uid {
   font-family: "Consolas", "Courier New", monospace;
-  font-size: 1.3rem;
+  font-size: 1.02rem;
   color: #fff;
-  letter-spacing: 2px;
+  letter-spacing: 1.2px;
 }
 
 .tag-time {
@@ -259,8 +402,8 @@ h1 {
 .empty-state {
   text-align: center;
   color: #555;
-  padding: 3rem 1rem;
-  font-size: 0.95rem;
+  padding: 1.4rem 0.75rem;
+  font-size: 0.85rem;
 }
 
 .empty-state .icon {
@@ -311,5 +454,40 @@ h1 {
 
   50% {
     opacity: 0.4;
+  }
+}
+
+@media (max-width: 760px) {
+  body {
+    overflow: auto;
+    padding: 0.6rem;
+  }
+
+  .dashboard {
+    height: auto;
+    min-height: calc(100vh - 1.2rem);
+    grid-template-rows: auto auto auto;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    overflow: visible;
+    padding-right: 0;
+  }
+
+  .panel-flow,
+  .panel-features,
+  .panel-tags,
+  .panel-form,
+  .panel-api {
+    grid-column: auto;
+  }
+
+  .full-width {
+    grid-column: auto;
+  }
+
+  #tagContainer {
+    max-height: 200px;
   }
 }

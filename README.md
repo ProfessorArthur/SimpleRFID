@@ -12,6 +12,8 @@ A minimal RFID tag reader that pairs an **Arduino + MFRC522** module with a **br
 - **Duplicate Detection** — Recognises previously scanned tags and increments their count.
 - **No Backend** — Runs entirely in the browser using the [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API).
 - **Dark UI** — Clean, responsive interface with status indicators and animations.
+- **Focused Input Autofill** — If your cursor is inside a form field, the scanned RFID UID is inserted at that cursor position.
+- **MySQL Backend** — API persists scans to MySQL for production-ready workflow.
 
 ## Hardware Requirements
 
@@ -42,22 +44,49 @@ A minimal RFID tag reader that pairs an **Arduino + MFRC522** module with a **br
 2. Open `SimpleRFID.ino` and upload it to your board.
 3. Open the Serial Monitor at **9600 baud** to verify tags are being read.
 
-### 2. Launch the Web UI
+### 2. Launch with MySQL Backend
 
-Open `index.html` in a browser that supports Web Serial (Chrome, Edge, or Opera):
+Create your MySQL DB first, then run the local server (serves UI + stores scans in MySQL):
+
+Install driver:
 
 ```
-# Easiest way — just double-click index.html, or:
-start index.html
+pip install mysql-connector-python
 ```
 
-> **Note:** Web Serial requires a secure context. Opening the file directly (`file://`) works in Chrome. Alternatively, serve it over localhost.
+Set environment variables (PowerShell):
+
+```
+$env:DB_CONNECTION="mysql"
+$env:DB_HOST="localhost"
+$env:DB_PORT="3306"
+$env:DB_DATABASE="local_mis"
+$env:DB_USERNAME="root"
+$env:DB_PASSWORD=""
+python server.py
+```
+
+Then open:
+
+```
+http://127.0.0.1:8000/index.html
+
+access via & .\.venv\Scripts\Activate.ps1; python --version; python server.py
+```
+
+`schema.sql` now targets MySQL 8+.
 
 ### 3. Connect & Scan
 
 1. Click **Connect to Reader**.
 2. Select your Arduino's COM port from the browser prompt.
 3. Hold an RFID tag near the reader — its UID will appear in the dashboard.
+
+### 4. Test Autofill Behavior
+
+1. Click inside any editable input/textarea in the **Form Autofill Test** panel.
+2. Scan an RFID card.
+3. The UID is inserted into the focused field at the cursor location.
 
 ## Project Structure
 
@@ -67,8 +96,16 @@ SimpleRFID/
 ├── index.html       # Web UI entry point
 ├── app.js           # Web Serial logic, tag parsing & rendering
 ├── styles.css       # Dark-themed responsive styles
+├── server.py        # Local HTTP + API server for MySQL
+├── schema.sql       # MySQL schema for cards and scan events
+├── laravel-ready/   # Copy-ready Laravel models/controllers/migrations/routes
 └── rfid-svgrepo-com.svg  # Favicon
 ```
+
+## Laravel Handoff
+
+Use files inside `laravel-ready/` to port this project into Laravel quickly.
+See `laravel-ready/README.md` for the exact copy order and commands.
 
 ## Browser Compatibility
 

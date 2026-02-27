@@ -4,44 +4,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RFID Tag Reader</title>
+    <title>RFID Tag Reader Demo</title>
     <link rel="icon" type="image/svg+xml" href="rfid-svgrepo-com.svg">
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
+    <main class="dashboard">
+        <header class="hero">
+            <h1>RFID Tag Reader Demo</h1>
+            <p class="subtitle">Example project: Web Serial RFID scan capture, autofill behavior, and backend logging
+            </p>
+        </header>
 
-    <h1>RFID Tag Reader</h1>
-    <p class="subtitle">Connect your Arduino RFID reader via USB</p>
-
-    <button id="connectBtn">Connect to Reader</button>
-
-    <div id="status" class="waiting">
-        <span class="pulse yellow"></span> Not connected
-    </div>
-
-    <div class="scan-bar">
-        <label for="scanInput">Scan Input</label>
-        <div class="scan-input-wrapper">
-            <span class="scan-icon">⏐</span>
-            <input type="text" id="scanInput" placeholder="Waiting for scan…" readonly />
-            <div id="scanConfirmation" class="scan-confirmation hidden"></div>
-        </div>
-    </div>
-
-    <div class="tag-list">
-        <h2>
-            Scanned Tags <span id="tagCount"></span>
-            <button id="clearBtn" style="display:none;">Clear</button>
-        </h2>
-        <div id="tagContainer">
-            <div class="empty-state">
-                <div class="icon">📡</div>
-                Connect your reader and scan an RFID tag to begin.
+        <section class="control-bar form-panel">
+            <div class="control-top">
+                <button id="connectBtn">Connect to Reader</button>
+                <div id="status" class="waiting">
+                    <span class="pulse yellow"></span> Not connected
+                </div>
             </div>
-        </div>
-    </div>
 
+            <div class="scan-bar compact">
+                <label for="scanInput">Scan Input</label>
+                <div class="scan-input-wrapper">
+                    <span class="scan-icon">⏐</span>
+                    <input type="text" id="scanInput" placeholder="Waiting for scan…" readonly />
+                    <div id="scanConfirmation" class="scan-confirmation hidden"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="dashboard-grid">
+            <div class="form-panel panel-flow">
+                <h2>Quick Demo Flow</h2>
+                <p>Use this page to validate end-to-end behavior in a few steps:</p>
+                <ol>
+                    <li>Click <strong>Connect to Reader</strong> and choose your Arduino serial port.</li>
+                    <li>Scan an RFID card to preview the UID in the scan bar.</li>
+                    <li>Focus any form field and scan again to test auto-insert + timed auto-clear.</li>
+                    <li>Review the tag history list to confirm unique count and last-seen ordering.</li>
+                    <li>Keep the backend running to persist each scan event.</li>
+                </ol>
+            </div>
+
+            <div class="form-panel panel-features">
+                <h2>Feature Showcase</h2>
+                <p><strong>Live Status:</strong> connection and read feedback are shown above.</p>
+                <p><strong>Scan Animation:</strong> each UID appears with a typewriter effect and confirmation.</p>
+                <p><strong>Autofill:</strong> the most recently focused writable field receives the scanned UID.</p>
+                <p><strong>Auto-Clear:</strong> the inserted UID is cleared after a short delay for repeat testing.</p>
+                <p><strong>History:</strong> repeated scans increment counts and move cards by recency.</p>
+                <p><strong>Backend Save:</strong> scans are posted to the API configured in
+                    <code>window.APP_CONFIG</code>.
+                </p>
+            </div>
+
+            <div class="form-panel panel-form">
+                <h2>Form Autofill Test Area</h2>
+                <p>Click any field below, then scan an RFID card to insert the UID and watch it clear automatically.</p>
+                <label for="employeeIdInput">Employee ID</label>
+                <input type="text" id="employeeIdInput" name="employee_id" placeholder="Focus here then scan" />
+
+                <label for="assetTagInput">Asset Tag</label>
+                <input type="text" id="assetTagInput" name="asset_tag" placeholder="Focus here then scan" />
+
+                <label for="notesInput">Notes</label>
+                <textarea id="notesInput" name="notes" rows="3"
+                    placeholder="RFID UID will be inserted at cursor"></textarea>
+            </div>
+
+            <div class="tag-list form-panel panel-tags">
+                <h2>
+                    Scanned Tags <span id="tagCount"></span>
+                    <button id="clearBtn" style="display:none;">Clear</button>
+                </h2>
+                <div id="tagContainer">
+                    <div class="empty-state">
+                        <div class="icon">📡</div>
+                        Connect your reader and scan an RFID tag to begin.
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-panel full-width panel-api">
+                <h2>API Notes</h2>
+                <p><strong>Configured Base URL:</strong> <code>http://127.0.0.1:8000</code></p>
+                <p><strong>Scan Write Endpoint:</strong> <code>POST /api/scans</code></p>
+                <p><strong>Recent Scans Endpoint:</strong> <code>GET /api/scans</code></p>
+                <p><strong>Card Summary Endpoint:</strong> <code>GET /api/cards</code></p>
+                <p><strong>DB Safety Endpoint:</strong> <code>GET /api/safety/db</code></p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        window.APP_CONFIG = {
+            apiBaseUrl: "http://127.0.0.1:8000"
+        };
+    </script>
     <script src="app.js"></script>
 
 </body>

@@ -10,6 +10,8 @@ let port = null;
 let reader = null;
 let tags = []; // { uid, count, lastSeen }
 let scanAnimTimer = null;
+let lastFocusedWritableField = null;
+let focusedFieldClearTimer = null;
 
 // ---- Configurable timings (edit these to change behavior) ----
 const BEEP_FREQUENCY = 1500; // Hz
@@ -17,11 +19,16 @@ const BEEP_DURATION_MS = 120; // ms
 const TYPE_DELAY_MS = 10; // ms per character when typing UID
 const POST_TYPE_PAUSE_MS = 600; // ms to wait after typing before confirmation
 const CONFIRM_DISPLAY_MS = 500; // ms to display the "scanned" confirmation
+const FOCUSED_FIELD_CLEAR_MS = 1000; // ms before clearing scanned UID from focused form field
+const API_BASE_URL =
+  window.APP_CONFIG?.apiBaseUrl !== undefined
+    ? window.APP_CONFIG.apiBaseUrl
+    : "http://127.0.0.1:8000";
 // ---------------------------------------------------------------
 // Create beep sound using Web Audio API
 function playBeep(frequency = 1500, duration = 150) {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = new (window.AudioContext || window.AudioContext)();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = "square";
@@ -53,7 +60,7 @@ connectBtn.addEventListener("click", async () => {
     readLoop();
   } catch (err) {
     if (err.name !== "NotFoundError") {
-      setStatus("error", "Connection failed: " + err.message);
+      setStatus("error", getConnectionErrorMessage(err));
     }
     port = null;
   }
@@ -122,6 +129,8 @@ function parseLine(line) {
   const uid = match[1].trim().toUpperCase();
   const now = new Date();
 
+  writeUidToFocusedField(uid);
+
   // Barcode-like scan animation
   animateScanInput(uid, now);
 }
@@ -171,7 +180,7 @@ function animateScanInput(uid, now) {
           scanConfirmation.classList.add("hidden");
           scanInput.placeholder = "Waiting for scan…";
         }, CONFIRM_DISPLAY_MS);
-      }, 600);
+      }, POST_TYPE_PAUSE_MS);
     }
   }
 
@@ -192,8 +201,103 @@ function recordTag(uid, now) {
   // Sort: most recent first
   tags.sort((a, b) => b.lastSeen - a.lastSeen);
 
+  saveScanToDatabase(uid, now, getFocusedFieldName());
+
   setStatus("ok", `Tag read: ${uid}`);
   renderTags();
+}
+
+function isWritableField(el) {
+  if (!el) return false;
+  if (el.matches("input, textarea")) {
+    return !el.readOnly && !el.disabled;
+  }
+  return el.isContentEditable === true;
+}
+
+function writeUidToFocusedField(uid) {
+  const activeEl = document.activeElement;
+  const target = isWritableField(activeEl)
+    ? activeEl
+    : isWritableField(lastFocusedWritableField)
+      ? lastFocusedWritableField
+      : null;
+
+  if (!target) {
+    return;
+  }
+
+  if (target.matches("input, textarea")) {
+    target.value = uid;
+    const caretPos = uid.length;
+    target.setSelectionRange(caretPos, caretPos);
+    target.dispatchEvent(new Event("input", { bubbles: true }));
+    queueFocusedFieldClear(target, uid);
+    return;
+  }
+
+  if (target.isContentEditable) {
+    target.textContent = uid;
+    target.dispatchEvent(new Event("input", { bubbles: true }));
+    queueFocusedFieldClear(target, uid);
+  }
+}
+
+function queueFocusedFieldClear(target, scannedUid) {
+  if (focusedFieldClearTimer) {
+    clearTimeout(focusedFieldClearTimer);
+    focusedFieldClearTimer = null;
+  }
+
+  focusedFieldClearTimer = setTimeout(() => {
+    if (!isWritableField(target)) {
+      return;
+    }
+
+    if (target.matches("input, textarea")) {
+      if (target.value === scannedUid) {
+        target.value = "";
+        target.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+      return;
+    }
+
+    if (target.isContentEditable && target.textContent === scannedUid) {
+      target.textContent = "";
+      target.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  }, FOCUSED_FIELD_CLEAR_MS);
+}
+
+function getFocusedFieldName() {
+  const activeEl = document.activeElement;
+  const target = isWritableField(activeEl)
+    ? activeEl
+    : isWritableField(lastFocusedWritableField)
+      ? lastFocusedWritableField
+      : null;
+
+  if (!target) return null;
+  return target.id || target.name || target.getAttribute("aria-label") || null;
+}
+
+async function saveScanToDatabase(uid, now, targetField) {
+  try {
+    await fetch(`${API_BASE_URL}/api/scans`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        uid,
+        scanned_at: now.toISOString(),
+        source: "web-serial",
+        target_field: targetField,
+      }),
+    });
+  } catch (error) {
+    // Keep UI functional even when API server is offline.
+  }
 }
 
 function renderTags() {
@@ -240,3 +344,28 @@ function setStatus(type, message) {
     type === "ok" ? "green" : type === "waiting" ? "yellow" : "red";
   statusEl.innerHTML = `<span class="pulse ${pulseClass}"></span> ${message}`;
 }
+
+function getConnectionErrorMessage(err) {
+  const rawMessage = String(err?.message || "");
+  const lower = rawMessage.toLowerCase();
+
+  if (
+    lower.includes("failed to open serial port") ||
+    lower.includes("access denied") ||
+    lower.includes("device busy")
+  ) {
+    return "Connection failed: port is busy. Close Arduino Serial Monitor/IDE or PLX-DAQ, unplug/replug USB, then reconnect.";
+  }
+
+  if (lower.includes("networkerror") || lower.includes("disconnected")) {
+    return "Connection failed: reader disconnected. Reconnect USB and try again.";
+  }
+
+  return "Connection failed: " + rawMessage;
+}
+
+document.addEventListener("focusin", (event) => {
+  if (isWritableField(event.target)) {
+    lastFocusedWritableField = event.target;
+  }
+});

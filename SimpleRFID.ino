@@ -3,6 +3,7 @@
 
 #define SS_PIN 10
 #define RST_PIN 9
+#define BUZZER_PIN 6
 
 MFRC522 rfid(SS_PIN, RST_PIN);
 
@@ -12,6 +13,11 @@ void setup() {
   rfid.PCD_Init();
   
   pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(BUZZER_PIN, OUTPUT);
+
+  tone(BUZZER_PIN, 1200, 120);
+  delay(130);
+  noTone(BUZZER_PIN);
   Serial.println("System Active. Scan your tag...");
 }
 
@@ -34,6 +40,7 @@ void loop() {
 
   // SUCCESS: Solid light for 2 seconds and print to Serial
   digitalWrite(LED_BUILTIN, HIGH);
+  tone(BUZZER_PIN, 1600, 120);
   Serial.print("Tag Detected! ID:");
   
   for (byte i = 0; i < rfid.uid.size; i++) {
@@ -42,7 +49,9 @@ void loop() {
   }
   
   Serial.println();
+  noTone(BUZZER_PIN);
   delay(2000); // Keep LED on so you can see the success
+  digitalWrite(LED_BUILTIN, LOW);
   
   rfid.PICC_HaltA(); // Stop reading the same card
 }
