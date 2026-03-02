@@ -6,9 +6,9 @@
    - `Tag Detected! ID: AA BB CC DD`
 2. Browser app (`index.html` + `app.js`) opens the serial port via Web Serial.
 3. `app.js` parses the UID, updates UI, autofills focused input field, then clears that field for next scan.
-4. Frontend posts scan payload to API:
+4. Frontend posts scan payload to Laravel API:
    - `POST /api/scans`
-5. Backend writes/updates:
+5. Laravel backend writes/updates:
    - upsert card in `rfid_cards`
    - insert event row in `scan_events`
 6. UI can pull history via:
@@ -63,7 +63,7 @@ Use these every time:
 3. Set app env:
    - `DB_CONNECTION=mysql`
    - `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`
-4. Start backend and confirm `/api/health` and `/api/safety/db`.
+4. Start Laravel app and confirm `/api/health` and `/api/safety/db`.
 5. Smoke-test scan flow end to end.
 
 ---
