@@ -88,6 +88,36 @@ class ScanController extends Controller
         ]);
     }
 
+    public function lookup(Request $request): JsonResponse
+    {
+        $uid = strtoupper(trim((string) $request->query('uid', '')));
+
+        if ($uid === '') {
+            return response()->json(['found' => false]);
+        }
+
+        $card = RfidCard::query()->where('uid', $uid)->first();
+
+        if (! $card) {
+            return response()->json(['found' => false, 'uid' => $uid]);
+        }
+
+        $lastScan = ScanEvent::query()
+            ->where('card_id', $card->id)
+            ->whereNotNull('target_field')
+            ->latest('scanned_at')
+            ->first();
+
+        return response()->json([
+            'found' => true,
+            'uid' => $card->uid,
+            'total_scans' => $card->total_scans,
+            'first_seen_at' => $card->first_seen_at,
+            'last_seen_at' => $card->last_seen_at,
+            'last_target_field' => $lastScan?->target_field,
+        ]);
+    }
+
     public function health(): JsonResponse
     {
         DB::select('SELECT 1');

@@ -188,22 +188,37 @@ function animateScanInput(uid, now) {
     typeNext();
 }
 
-function recordTag(uid, now) {
+async function recordTag(uid, now) {
     // Check if tag already seen
     const existing = tags.find((t) => t.uid === uid);
     if (existing) {
         existing.count++;
         existing.lastSeen = now;
     } else {
-        tags.unshift({ uid, count: 1, lastSeen: now });
+        tags.unshift({
+            uid,
+            count: 1,
+            lastSeen: now,
+            isKnown: null,
+            lastTargetField: null,
+        });
     }
 
     // Sort: most recent first
     tags.sort((a, b) => b.lastSeen - a.lastSeen);
 
-    saveScanToDatabase(uid, now, getFocusedFieldName());
-
     setStatus("ok", `Tag read: ${uid}`);
+    renderTags();
+
+    await saveScanToDatabase(uid, now, getFocusedFieldName());
+
+    const cardInfo = await fetchCardInfo(uid);
+    const tag = tags.find((t) => t.uid === uid);
+    if (tag && cardInfo) {
+        tag.isKnown = cardInfo.found;
+        tag.lastTargetField = cardInfo.last_target_field ?? null;
+    }
+
     renderTags();
 }
 
@@ -318,6 +333,20 @@ async function saveScanToDatabase(uid, now, targetField) {
     }
 }
 
+async function fetchCardInfo(uid) {
+    try {
+        const res = await fetch(
+            `${API_BASE_URL}/api/cards/lookup?uid=${encodeURIComponent(uid)}`,
+        );
+        if (!res.ok) {
+            return null;
+        }
+        return await res.json();
+    } catch {
+        return null;
+    }
+}
+
 function renderTags() {
     if (tags.length === 0) {
         tagContainer.innerHTML = `
@@ -325,21 +354,25 @@ function renderTags() {
             <div class="icon">📡</div>
             Connect your reader and scan an RFID tag to begin.
           </div>`;
-        tagCountEl.textContent = "";
+        if (tagCountEl) tagCountEl.textContent = "";
         clearBtn.style.display = "none";
         return;
     }
 
-    tagCountEl.textContent = `(${tags.length} unique)`;
+    if (tagCountEl) tagCountEl.textContent = `(${tags.length} unique)`;
     clearBtn.style.display = "inline-block";
 
     tagContainer.innerHTML = tags
         .map(
             (tag) => `
         <div class="tag-card">
-          <div>
+          <div class="tag-main">
             <span class="tag-uid">${tag.uid}</span>
             ${tag.count > 1 ? `<span class="tag-count">×${tag.count}</span>` : ""}
+            <div class="tag-badges">
+              ${tag.isKnown === true ? `<span class="badge badge-known">Known</span>` : tag.isKnown === false ? `<span class="badge badge-new">New</span>` : ""}
+              ${tag.lastTargetField ? `<span class="badge badge-field">${tag.lastTargetField}</span>` : ""}
+            </div>
           </div>
           <span class="tag-time">${formatTime(tag.lastSeen)}</span>
         </div>

@@ -7,4 +7,5 @@ Route::get('/health', [ScanController::class, 'health']);
 Route::post('/scans', [ScanController::class, 'store']);
 Route::get('/scans', [ScanController::class, 'scans']);
 Route::get('/cards', [ScanController::class, 'cards']);
+Route::get('/cards/lookup', [ScanController::class, 'lookup']);
 Route::get('/safety/db', [ScanController::class, 'safetyDb']);
