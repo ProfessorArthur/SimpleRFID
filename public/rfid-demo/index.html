@@ -4,79 +4,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RFID Tag Reader Demo</title>
+    <title>RFID Command Center</title>
     <link rel="icon" type="image/svg+xml" href="rfid-svgrepo-com.svg">
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
     <main class="dashboard">
-    <header class="hero">
-        <h1>RFID Command Center</h1>
-        <p class="subtitle">System Status: <span id="status" class="waiting">Offline</span></p>
-    </header>
 
-    <div class="dashboard-grid">
-        <section class="form-panel control-bar">
-            <button id="connectBtn">Initialize Reader</button>
-            <div class="scan-bar">
-                <div class="scan-input-wrapper">
-                    <input type="text" id="scanInput" placeholder="READY FOR SCAN..." readonly />
-                    <div id="scanConfirmation" class="scan-confirmation hidden"></div>
+        <!-- ── Hero ── -->
+        <header class="hero">
+            <h1>RFID <span>Command</span> Center</h1>
+            <p class="subtitle">
+                System Status: <span id="status" class="waiting">
+                    <span class="pulse yellow"></span> Offline
+                </span>
+            </p>
+        </header>
+
+        <div class="dashboard-grid">
+
+            <!-- ── Control Bar (full-width) ── -->
+            <section class="form-panel control-bar">
+                <button id="connectBtn"><span>Initialize Reader</span></button>
+                <div class="scan-bar">
+                    <div class="scan-input-wrapper">
+                        <input type="text" id="scanInput" placeholder="READY FOR SCAN…" readonly />
+                        <div id="scanConfirmation" class="scan-confirmation hidden"></div>
+                    </div>
                 </div>
-            </div>
-        </section>
-
-        <div class="col-1">
-            <section class="form-panel">
-                <h2>Operational Guide</h2>
-                <ol class="modern-list">
-                    <li>Select Serial Port</li>
-                    <li>Scan Physical Tag</li>
-                    <li>Auto-Log to Backend</li>
-                </ol>
+                <span id="status-mirror" style="display:none"></span>
             </section>
-            
-            <section class="form-panel" style="margin-top: 1.25rem;">
-                <h2>API Configuration</h2>
-                <code style="font-size: 0.7rem; color: var(--accent);">POST /api/scans</code>
-            </section>
-        </div>
 
-        <section class="form-panel panel-form">
-            <h2>Data Entry Simulator</h2>
-            <div class="input-group">
-                <label>Employee Identity</label>
-                <input type="text" id="employeeIdInput" placeholder="Waiting for UID...">
-            </div>
-            <div class="input-group" style="margin-top: 1rem;">
-                <label>Asset Registry</label>
-                <input type="text" id="assetTagInput" placeholder="Waiting for UID...">
-            </div>
-            <div class="input-group" style="margin-top: 1rem;">
-                <label>System Notes</label>
-                <textarea id="notesInput" rows="4"></textarea>
-            </div>
-        </section>
+            <!-- ── Col 1: Guide + API ── -->
+            <div class="col-1">
+                <section class="form-panel">
+                    <h2>Operational Guide</h2>
+                    <ol class="modern-list">
+                        <li>Select Serial Port <br><b>(Requires Permission)</b></br></li>
+                        <li>Scan Physical Tag <br><b>(Requires RFID Tag)</b></br></li>
+                        <li>Auto-Log to Backend</li>
+                    </ol>
+                </section>
 
-        <section class="form-panel panel-tags">
-            <div class="panel-header">
-                <h2>Live Scan Feed</h2>
-                <button id="clearBtn" class="btn-sm">Flush</button>
+                <section class="form-panel">
+                    <h2>API Configuration</h2>
+                    <div class="api-config">
+                        <div class="api-route">
+                            <span class="api-method">POST</span>
+                            /api/scans
+                        </div>
+                        <div class="api-route">
+                            <span class="api-method">GET</span>
+                            /api/cards/lookup
+                        </div>
+                    </div>
+                </section>
             </div>
-            <div id="tagContainer">
+
+            <!-- ── Col 2: Data Entry ── -->
+            <section class="form-panel panel-form">
+                <h2>Data Entry Simulator</h2>
+                <div class="input-group">
+                    <label for="employeeIdInput">Employee Identity</label>
+                    <input type="text" id="employeeIdInput" name="employee_id" placeholder="Waiting for UID…">
                 </div>
-        </section>
-    </div>
-</main>
+                <div class="input-group">
+                    <label for="assetTagInput">Asset Registry</label>
+                    <input type="text" id="assetTagInput" name="asset_tag" placeholder="Waiting for UID…">
+                </div>
+                <div class="input-group">
+                    <label for="notesInput">System Notes</label>
+                    <textarea id="notesInput" rows="4" placeholder="Free-form notes…"></textarea>
+                </div>
+            </section>
+
+            <!-- ── Col 3: Live Feed ── -->
+            <section class="form-panel panel-tags">
+                <div class="panel-header">
+                    <h2>Live Scan Feed <span class="tag-count" id="tagCount"></span></h2>
+                    <button id="clearBtn">Flush</button>
+                </div>
+                <div id="tagContainer">
+                    <div class="empty-state">
+                        <div class="icon">📡</div>
+                        Connect your reader and scan an RFID tag to begin.
+                    </div>
+                </div>
+            </section>
+
+        </div><!-- /.dashboard-grid -->
+    </main>
 
     <script>
-        window.APP_CONFIG = {
-            apiBaseUrl: ""
-        };
+        window.APP_CONFIG = { apiBaseUrl: "" };
     </script>
     <script src="app.js"></script>
-
 </body>
 
 </html>
